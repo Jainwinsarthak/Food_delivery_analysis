@@ -1,0 +1,517 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": []
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "code",
+      "source": [
+        "import pandas as pd\n",
+        "import sqlite3\n",
+        "from google.colab import drive"
+      ],
+      "metadata": {
+        "id": "UBQEhJkLtqO5"
+      },
+      "execution_count": 20,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "drive.mount('/content/drive')\n",
+        "base_path=\"/content/drive/MyDrive/\""
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "1O67JAGC0m7x",
+        "outputId": "cd8f384a-b44c-4d5b-feeb-bdd79a5f3da6"
+      },
+      "execution_count": 24,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Drive already mounted at /content/drive; to attempt to forcibly remount, call drive.mount(\"/content/drive\", force_remount=True).\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import os\n",
+        "os.listdir(\"/content/drive/MyDrive\")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "collapsed": true,
+        "id": "piJ_IVEi1RZ4",
+        "outputId": "ebc782f2-74e9-4558-c08d-2c00de158570"
+      },
+      "execution_count": 23,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "['restaurants.sql',\n",
+              " 'orders.csv',\n",
+              " 'users.json',\n",
+              " 'Colab Notebooks',\n",
+              " 'Screenshot_20250319_025455_WinZO.jpg',\n",
+              " 'Certificate.pdf',\n",
+              " 'Screenshot_20230808_150337_Photos (1).jpg',\n",
+              " 'Screenshot_20230808_150337_Photos.jpg',\n",
+              " 'Classroom',\n",
+              " 'TakeYourPills Report 356 days.csv',\n",
+              " 'FIT.png',\n",
+              " 'IMG_20240522_125828_306.jpg',\n",
+              " 'Screenshot_20240528_202903_WhatsApp.jpg',\n",
+              " 'Screenshot_20240802_193612_KGeN.jpg',\n",
+              " 'Screenshot_20240905_151948_GPay.jpg',\n",
+              " 'InAmigos',\n",
+              " 'Internship Offer Letter^.docx.pdf',\n",
+              " 'Screenshot_20250223_163809_WinZO.jpg',\n",
+              " 'Screenshot_20250223_164209_Chrome.jpg',\n",
+              " 'Screenshot_20250223_164431_Google Play Store.jpg',\n",
+              " 'Adobe Scan 17 Jun 2021_1.jpg',\n",
+              " 'resume (1).pdf',\n",
+              " 'IMG-20250430-WA0038.jpg',\n",
+              " 'sarthak_resume (1).pdf',\n",
+              " 'sarthak_resume.pdf',\n",
+              " 'One View by AKTU SDC Team(1).PDF',\n",
+              " '20250727_180729.jpg',\n",
+              " '20250727_180724.jpg',\n",
+              " 'Screenshot_20250727_181248_Chrome.jpg',\n",
+              " 'MLCS BCMP_copy.pdf',\n",
+              " 'SarthakJainResume.pdf',\n",
+              " 'IMG-20250219-WA0104.jpg',\n",
+              " 'SarthakJain_resume.pdf',\n",
+              " 'Unit1 NOTES_copy.pdf']"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 23
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "orders=pd.read_csv(base_path+\"orders.csv\")\n",
+        "users=pd.read_json(base_path+\"users.json\")"
+      ],
+      "metadata": {
+        "collapsed": true,
+        "id": "YUnxYCHRt7jF"
+      },
+      "execution_count": 25,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "conn=sqlite3.connect(\":memory:\")\n",
+        "with open(base_path + \"restaurants.sql\") as f:\n",
+        "  conn.executescript(f.read())\n",
+        "restaurant=pd.read_sql_query(\"SELECT * FROM restaurants\",conn)"
+      ],
+      "metadata": {
+        "id": "ERXq-gtiuU3b"
+      },
+      "execution_count": 27,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "final=orders.merge(users,on='user_id',how='left') \\\n",
+        ".merge(restaurant,how=\"left\")\n"
+      ],
+      "metadata": {
+        "collapsed": true,
+        "id": "JLEmXwO4vX3U"
+      },
+      "execution_count": 32,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "final.head()"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 223
+        },
+        "id": "mzZR7uAw64_0",
+        "outputId": "17d2cc93-117c-448e-c09a-689ca1cbeda0"
+      },
+      "execution_count": 33,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "   order_id  user_id  restaurant_id  order_date  total_amount  \\\n",
+              "0         1     2508            450  18-02-2023        842.97   \n",
+              "1         2     2693            309  18-01-2023        546.68   \n",
+              "2         3     2084            107  15-07-2023        163.93   \n",
+              "3         4      319            224  04-10-2023       1155.97   \n",
+              "4         5     1064            293  25-12-2023       1321.91   \n",
+              "\n",
+              "                  restaurant_name       name       city membership cuisine  \\\n",
+              "0               New Foods Chinese  User_2508  Hyderabad    Regular     NaN   \n",
+              "1  Ruchi Curry House Multicuisine  User_2693       Pune    Regular     NaN   \n",
+              "2           Spice Kitchen Punjabi  User_2084    Chennai       Gold     NaN   \n",
+              "3          Darbar Kitchen Non-Veg   User_319  Bangalore       Gold     NaN   \n",
+              "4       Royal Eatery South Indian  User_1064       Pune    Regular     NaN   \n",
+              "\n",
+              "   rating  \n",
+              "0     NaN  \n",
+              "1     NaN  \n",
+              "2     NaN  \n",
+              "3     NaN  \n",
+              "4     NaN  "
+            ],
+            "text/html": [
+              "\n",
+              "  <div id=\"df-d3611568-9f1d-4ee5-8a78-fe48a4b40001\" class=\"colab-df-container\">\n",
+              "    <div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>order_id</th>\n",
+              "      <th>user_id</th>\n",
+              "      <th>restaurant_id</th>\n",
+              "      <th>order_date</th>\n",
+              "      <th>total_amount</th>\n",
+              "      <th>restaurant_name</th>\n",
+              "      <th>name</th>\n",
+              "      <th>city</th>\n",
+              "      <th>membership</th>\n",
+              "      <th>cuisine</th>\n",
+              "      <th>rating</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>0</th>\n",
+              "      <td>1</td>\n",
+              "      <td>2508</td>\n",
+              "      <td>450</td>\n",
+              "      <td>18-02-2023</td>\n",
+              "      <td>842.97</td>\n",
+              "      <td>New Foods Chinese</td>\n",
+              "      <td>User_2508</td>\n",
+              "      <td>Hyderabad</td>\n",
+              "      <td>Regular</td>\n",
+              "      <td>NaN</td>\n",
+              "      <td>NaN</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>1</th>\n",
+              "      <td>2</td>\n",
+              "      <td>2693</td>\n",
+              "      <td>309</td>\n",
+              "      <td>18-01-2023</td>\n",
+              "      <td>546.68</td>\n",
+              "      <td>Ruchi Curry House Multicuisine</td>\n",
+              "      <td>User_2693</td>\n",
+              "      <td>Pune</td>\n",
+              "      <td>Regular</td>\n",
+              "      <td>NaN</td>\n",
+              "      <td>NaN</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>2</th>\n",
+              "      <td>3</td>\n",
+              "      <td>2084</td>\n",
+              "      <td>107</td>\n",
+              "      <td>15-07-2023</td>\n",
+              "      <td>163.93</td>\n",
+              "      <td>Spice Kitchen Punjabi</td>\n",
+              "      <td>User_2084</td>\n",
+              "      <td>Chennai</td>\n",
+              "      <td>Gold</td>\n",
+              "      <td>NaN</td>\n",
+              "      <td>NaN</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>3</th>\n",
+              "      <td>4</td>\n",
+              "      <td>319</td>\n",
+              "      <td>224</td>\n",
+              "      <td>04-10-2023</td>\n",
+              "      <td>1155.97</td>\n",
+              "      <td>Darbar Kitchen Non-Veg</td>\n",
+              "      <td>User_319</td>\n",
+              "      <td>Bangalore</td>\n",
+              "      <td>Gold</td>\n",
+              "      <td>NaN</td>\n",
+              "      <td>NaN</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>4</th>\n",
+              "      <td>5</td>\n",
+              "      <td>1064</td>\n",
+              "      <td>293</td>\n",
+              "      <td>25-12-2023</td>\n",
+              "      <td>1321.91</td>\n",
+              "      <td>Royal Eatery South Indian</td>\n",
+              "      <td>User_1064</td>\n",
+              "      <td>Pune</td>\n",
+              "      <td>Regular</td>\n",
+              "      <td>NaN</td>\n",
+              "      <td>NaN</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>\n",
+              "    <div class=\"colab-df-buttons\">\n",
+              "\n",
+              "  <div class=\"colab-df-container\">\n",
+              "    <button class=\"colab-df-convert\" onclick=\"convertToInteractive('df-d3611568-9f1d-4ee5-8a78-fe48a4b40001')\"\n",
+              "            title=\"Convert this dataframe to an interactive table.\"\n",
+              "            style=\"display:none;\">\n",
+              "\n",
+              "  <svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24px\" viewBox=\"0 -960 960 960\">\n",
+              "    <path d=\"M120-120v-720h720v720H120Zm60-500h600v-160H180v160Zm220 220h160v-160H400v160Zm0 220h160v-160H400v160ZM180-400h160v-160H180v160Zm440 0h160v-160H620v160ZM180-180h160v-160H180v160Zm440 0h160v-160H620v160Z\"/>\n",
+              "  </svg>\n",
+              "    </button>\n",
+              "\n",
+              "  <style>\n",
+              "    .colab-df-container {\n",
+              "      display:flex;\n",
+              "      gap: 12px;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-convert {\n",
+              "      background-color: #E8F0FE;\n",
+              "      border: none;\n",
+              "      border-radius: 50%;\n",
+              "      cursor: pointer;\n",
+              "      display: none;\n",
+              "      fill: #1967D2;\n",
+              "      height: 32px;\n",
+              "      padding: 0 0 0 0;\n",
+              "      width: 32px;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-convert:hover {\n",
+              "      background-color: #E2EBFA;\n",
+              "      box-shadow: 0px 1px 2px rgba(60, 64, 67, 0.3), 0px 1px 3px 1px rgba(60, 64, 67, 0.15);\n",
+              "      fill: #174EA6;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-buttons div {\n",
+              "      margin-bottom: 4px;\n",
+              "    }\n",
+              "\n",
+              "    [theme=dark] .colab-df-convert {\n",
+              "      background-color: #3B4455;\n",
+              "      fill: #D2E3FC;\n",
+              "    }\n",
+              "\n",
+              "    [theme=dark] .colab-df-convert:hover {\n",
+              "      background-color: #434B5C;\n",
+              "      box-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.15);\n",
+              "      filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3));\n",
+              "      fill: #FFFFFF;\n",
+              "    }\n",
+              "  </style>\n",
+              "\n",
+              "    <script>\n",
+              "      const buttonEl =\n",
+              "        document.querySelector('#df-d3611568-9f1d-4ee5-8a78-fe48a4b40001 button.colab-df-convert');\n",
+              "      buttonEl.style.display =\n",
+              "        google.colab.kernel.accessAllowed ? 'block' : 'none';\n",
+              "\n",
+              "      async function convertToInteractive(key) {\n",
+              "        const element = document.querySelector('#df-d3611568-9f1d-4ee5-8a78-fe48a4b40001');\n",
+              "        const dataTable =\n",
+              "          await google.colab.kernel.invokeFunction('convertToInteractive',\n",
+              "                                                    [key], {});\n",
+              "        if (!dataTable) return;\n",
+              "\n",
+              "        const docLinkHtml = 'Like what you see? Visit the ' +\n",
+              "          '<a target=\"_blank\" href=https://colab.research.google.com/notebooks/data_table.ipynb>data table notebook</a>'\n",
+              "          + ' to learn more about interactive tables.';\n",
+              "        element.innerHTML = '';\n",
+              "        dataTable['output_type'] = 'display_data';\n",
+              "        await google.colab.output.renderOutput(dataTable, element);\n",
+              "        const docLink = document.createElement('div');\n",
+              "        docLink.innerHTML = docLinkHtml;\n",
+              "        element.appendChild(docLink);\n",
+              "      }\n",
+              "    </script>\n",
+              "  </div>\n",
+              "\n",
+              "\n",
+              "    </div>\n",
+              "  </div>\n"
+            ],
+            "application/vnd.google.colaboratory.intrinsic+json": {
+              "type": "dataframe",
+              "variable_name": "final",
+              "repr_error": "Out of range float values are not JSON compliant: nan"
+            }
+          },
+          "metadata": {},
+          "execution_count": 33
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "final.shape"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Sf6NUdX4699L",
+        "outputId": "8d3db7e0-707a-4e74-913a-8973814e2410"
+      },
+      "execution_count": 34,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "(10000, 11)"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 34
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "final.to_csv(base_path+\"final_food_delivery_dateset.csv\",index=False)"
+      ],
+      "metadata": {
+        "id": "DYw6a4267C2i"
+      },
+      "execution_count": 35,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "len(final)\n",
+        "final[\"total_amount\"].sum()\n",
+        "final[final[\"membership\"]==\"Gold\"].shape[0]\n",
+        "final.groupby(\"city\")[\"total_amount\"].sum()"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 241
+        },
+        "id": "78R9594D7h0J",
+        "outputId": "774431d5-7789-4d47-af69-e9f3eb8c3712"
+      },
+      "execution_count": 41,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "city\n",
+              "Bangalore    2206946.58\n",
+              "Chennai      1990513.03\n",
+              "Hyderabad    1889366.58\n",
+              "Pune         1924797.93\n",
+              "Name: total_amount, dtype: float64"
+            ],
+            "text/html": [
+              "<div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>total_amount</th>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>city</th>\n",
+              "      <th></th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>Bangalore</th>\n",
+              "      <td>2206946.58</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>Chennai</th>\n",
+              "      <td>1990513.03</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>Hyderabad</th>\n",
+              "      <td>1889366.58</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>Pune</th>\n",
+              "      <td>1924797.93</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div><br><label><b>dtype:</b> float64</label>"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 41
+        }
+      ]
+    }
+  ]
+}
